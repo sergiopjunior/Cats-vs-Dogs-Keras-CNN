@@ -54,15 +54,19 @@ def generate_pkl_files(root, mode="train"):
         print("Arquivos pkl gerados.")
 
 
-def load_pickle_files():
+def load_pickle_train_files():
     x_train = pickle.load(open('x_train.pkl', 'rb'))
     y_train = pickle.load(open('y_train.pkl', 'rb'))
+    print(f"Arquivos pkl TRAIN carregados. X_TRAIN: {x_train.shape}, Y_TRAIN: {y_train.shape}")
+
+    return x_train, y_train
+
+def load_pickle_test_files():
     x_test = pickle.load(open('x_test.pkl', 'rb'))
     y_test = pickle.load(open('y_test.pkl', 'rb'))
-    print(
-        f"Arquivos pkl carregados. X_TRAIN: {x_train.shape}, Y_TRAIN: {y_train.shape} | X_TEST: {x_test.shape}, Y_TEST: {y_test.shape}")
+    print(f"Arquivos pkl TEST carregados. X_TEST: {x_test.shape}, Y_TEST: {y_test.shape}")
 
-    return x_train, y_train, x_test, y_test
+    return x_test, y_test
 
 def train_model(x_train, y_train, x_test, y_test, board=False):
     x_train = x_train / 255
@@ -123,11 +127,13 @@ if __name__ == '__main__':
         generate_pkl_files(TRAIN_DIRECTORY)
     if not {'x_test.pkl', 'y_test.pkl'}.issubset(set(os.listdir())):
         generate_pkl_files(TEST_DIRECTORY, mode='test')
-    X_TRAIN, Y_TRAIN, X_TEST, Y_TEST = load_pickle_files()
+    X_TEST, Y_TEST = load_pickle_test_files()
     try:
         model = load_model(f'.\\Models\\cats_and_dogs')
     except:
+        X_TRAIN, Y_TRAIN = load_pickle_train_files()
         model = train_model(X_TRAIN, Y_TRAIN, X_TEST, Y_TEST)
+        validation(model, X_TEST, Y_TEST)
 
-    # validation(model, X_TEST, Y_TEST)
-    prediction(model, X_TEST, Y_TEST)
+    for i in range(10):
+        prediction(model, X_TEST, Y_TEST)
